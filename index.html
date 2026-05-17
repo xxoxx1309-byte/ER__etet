@@ -6,18 +6,60 @@
     <title>이터리고?</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        /* 페이퍼로지(Paperlogy) 웹 폰트 연동 */
+        /* ⭕ 제공해주신 페이퍼로지 웹폰트 세팅 반영 */
         @font-face {
-            font-family: 'Paperlogy';
-            src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2411@1.0/Paperlogy-Medium.woff2') format('woff2');
-            font-weight: 500;
-            font-style: normal;
+            font-family: 'Paperozi';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-1Thin.woff2') format('woff2');
+            font-weight: 100;
+            font-display: swap;
         }
         @font-face {
-            font-family: 'Paperlogy';
-            src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2411@1.0/Paperlogy-Bold.woff2') format('woff2');
+            font-family: 'Paperozi';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-2ExtraLight.woff2') format('woff2');
+            font-weight: 200;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Paperozi';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-3Light.woff2') format('woff2');
+            font-weight: 300;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Paperozi';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2');
+            font-weight: 400;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Paperozi';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-5Medium.woff2') format('woff2');
+            font-weight: 500;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Paperozi';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-6SemiBold.woff2') format('woff2');
+            font-weight: 600;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Paperozi';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');
             font-weight: 700;
-            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Paperozi';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-8ExtraBold.woff2') format('woff2');
+            font-weight: 800;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Paperozi';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-9Black.woff2') format('woff2');
+            font-weight: 900;
+            font-display: swap;
         }
 
         :root {
@@ -25,14 +67,16 @@
             --btn-bg-color: #ff9800;
             --btn-hover-color: #e68a00;
             --text-color: #ffffff;
-            --input-font-size: 16px;
-            --input-font-color: #ffffff;
-            --textarea-font-size: 14px;
+            --font-main: 'Paperozi', sans-serif;
+            
+            /* 선택 시 들어올 이펙트 색상 (디자인에 맞게 변경 가능) */
+            --select-active-color: #00ffcc; 
+            --select-inactive-color: rgba(255, 255, 255, 0.4);
         }
 
         body {
             background-color: var(--main-bg-color);
-            font-family: 'Paperlogy', sans-serif;
+            font-family: var(--font-main);
             margin: 0;
             padding: 20px;
             display: flex;
@@ -49,7 +93,6 @@
             text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
-        /* 상단 컨트롤 영역 (스킨 선택 드롭다운 + 다운로드 버튼) */
         .control-panel {
             margin-bottom: 20px;
             display: flex;
@@ -62,7 +105,7 @@
         }
 
         .skin-select {
-            font-family: 'Paperlogy', sans-serif;
+            font-family: var(--font-main);
             padding: 10px;
             font-size: 16px;
             background-color: #1a1b20;
@@ -73,7 +116,7 @@
         }
 
         .btn {
-            font-family: 'Paperlogy', sans-serif;
+            font-family: var(--font-main);
             background-color: var(--btn-bg-color);
             color: white;
             border: none;
@@ -92,15 +135,14 @@
         /* 캡처 및 이미지 배경 영역 */
         #capture-area {
             position: relative;
-            width: 800px; 
-            height: 500px; 
+            width: 900px; /* 기능 증가에 따라 조정한 임시 가로 해상도 */
+            height: 600px; 
             background-color: #2c2d38;
             border-radius: 8px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             overflow: hidden;
         }
 
-        /* 하단에 숨겨진 실제 배경 이미지 객체 */
         #bg-image {
             position: absolute;
             top: 0;
@@ -111,7 +153,6 @@
             z-index: 1;
         }
 
-        /* 입력 폼 컨테이너 (이미지보다 위에 오도록 z-index 설정) */
         .input-container {
             position: absolute;
             top: 0;
@@ -119,48 +160,132 @@
             width: 100%;
             height: 100%;
             z-index: 2;
-            pointer-events: none; /* 컨테이너 자체는 클릭 무시 */
+            pointer-events: none;
         }
 
-        /* 공통 입력창 스타일 */
-        .profile-input {
+        /* 공통 텍스트 인풋 입력창 스타일 */
+        .profile-text-input {
             position: absolute;
             background: transparent;
             border: none;
             outline: none;
-            color: var(--input-font-color);
-            font-size: var(--input-font-size);
-            font-family: 'Paperlogy', sans-serif;
+            color: #ffffff;
+            font-size: 16px;
+            font-family: var(--font-main);
             font-weight: 500;
             padding: 4px;
             box-sizing: border-box;
-            pointer-events: auto; /* 입력창은 클릭 가능하게 */
+            pointer-events: auto;
         }
-
-        textarea.profile-input {
-            resize: none;
-            font-size: var(--textarea-font-size);
-            line-height: 1.5;
-        }
-
-        .profile-input:focus {
+        .profile-text-input:focus {
             background: rgba(255, 255, 255, 0.08);
             border-radius: 4px;
         }
 
+        textarea.profile-text-input {
+            resize: none;
+            line-height: 1.5;
+        }
+
+        /* 선택형 버튼 공통 그룹 및 요소 스타일 */
+        .toggle-group {
+            position: absolute;
+            display: flex;
+            gap: 10px;
+            pointer-events: auto;
+        }
+
+        .toggle-item {
+            font-family: var(--font-main);
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--select-inactive-color);
+            cursor: pointer;
+            user-select: none;
+            transition: color 0.2s, text-shadow 0.2s;
+        }
+
+        /* 활성화 시 색상 변경 및 네온 효과 */
+        .toggle-item.active {
+            color: var(--select-active-color);
+            text-shadow: 0 0 8px var(--select-active-color);
+        }
+
+        /* 티어 컨테이너 구성 */
+        .tier-container {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            pointer-events: auto;
+        }
+        .tier-select {
+            font-family: var(--font-main);
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 4px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .tier-icon {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+        }
+
+        /* 중앙 이미지 직접 업로드 영역 */
+        .upload-zone {
+            position: absolute;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.2);
+            pointer-events: auto;
+            transition: background 0.2s;
+        }
+        .upload-zone:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .upload-zone img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .upload-zone span {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            text-align: center;
+            padding: 10px;
+        }
+        .file-hidden {
+            display: none;
+        }
+
         /* ========================================================
-           [위치 조정 구역] 트친소표 레이아웃에 맞게 수정하세요.
+           [위치 조정 구역] 배경 레이아웃 디자인에 따라 자유롭게 변경
            ======================================================== */
-        .field-game-type { top: 50px; left: 50px; width: 200px; }
-        .field-ingame-name { top: 100px; left: 50px; width: 200px; }
-        .field-communication { top: 150px; left: 50px; width: 200px; }
-        .field-tier { top: 200px; left: 50px; width: 200px; }
-        .field-twitter-name { top: 40px; left: 300px; width: 200px; text-align: center; }
-        .field-info { top: 280px; left: 300px; width: 200px; text-align: center; }
-        .field-play-style { top: 50px; left: 550px; width: 200px; }
-        .field-avoid { top: 100px; left: 550px; width: 200px; }
-        .field-time { top: 150px; left: 550px; width: 200px; }
-        .field-introduction { top: 330px; left: 200px; width: 400px; height: 120px; }
+        .field-game-type { top: 60px; left: 50px; }            /* 게임 성향 토글 그룹 */
+        .field-ingame-name { top: 110px; left: 50px; width: 200px; } /* 닉네임 텍스트 입력 */
+        .field-communication { top: 160px; left: 50px; }        /* 소통 방식 토글 그룹 */
+        .field-tier-box { top: 210px; left: 50px; }             /* 티어 드롭다운 존 */
+        
+        .field-twitter-name { top: 40px; left: 350px; width: 200px; text-align: center; }
+        .field-info { top: 290px; left: 350px; width: 200px; text-align: center; }
+        
+        .field-play-style { top: 60px; left: 600px; }           /* 플레이 성향 토글 그룹 */
+        .field-play-etc { top: 95px; left: 600px; width: 180px; border-bottom: 1px solid rgba(255,255,255,0.4); font-size:13px; } /* 플레이 기타 인풋 */
+        .field-avoid { top: 140px; left: 600px; }               /* 지뢰 성향 토글 그룹 */
+        .field-time { top: 190px; left: 600px; width: 200px; }
+        .field-introduction { top: 350px; left: 250px; width: 400px; height: 100px; }
+
+        /* 중앙 파일 업로드 상자 위치 */
+        .field-user-upload { top: 120px; left: 375px; width: 150px; height: 150px; }
     </style>
 </head>
 <body>
@@ -178,25 +303,72 @@
         <img id="bg-image" src="" crossOrigin="anonymous" alt="배경">
         
         <div class="input-container">
-            <input type="text" class="profile-input field-game-type" placeholder="일반 / 랭크 / 코발트">
-            <input type="text" class="profile-input field-ingame-name" placeholder="인게임 닉네임">
-            <input type="text" class="profile-input field-communication" placeholder="듣기 / 말하기 / 전부">
-            <input type="text" class="profile-input field-tier" placeholder="현재 티어">
             
-            <input type="text" class="profile-input field-twitter-name" placeholder="트위터 닉네임">
-            <input type="text" class="profile-input field-info" placeholder="성별 / 나이">
+            <div class="toggle-group field-game-type">
+                <span class="toggle-item" onclick="toggleActive(this)">일반</span>
+                <span class="toggle-item" onclick="toggleActive(this)">랭크</span>
+                <span class="toggle-item" onclick="toggleActive(this)">코발트</span>
+                <span class="toggle-item" onclick="toggleActive(this)">내전</span>
+            </div>
+
+            <input type="text" class="profile-text-input field-ingame-name" placeholder="인게임 닉네임">
             
-            <input type="text" class="profile-input field-play-style" placeholder="연성 / 소비 / 흔적 / 일상">
-            <input type="text" class="profile-input field-avoid" placeholder="블락 / 블언블 / 언팔">
-            <input type="text" class="profile-input field-time" placeholder="주요 접속 시간대">
+            <div class="toggle-group field-communication">
+                <span class="toggle-item" onclick="toggleActive(this)">듣기</span>
+                <span class="toggle-item" onclick="toggleActive(this)">말하기</span>
+                <span class="toggle-item" onclick="toggleActive(this)">전부</span>
+                <span class="toggle-item" onclick="toggleActive(this)">미사용</span>
+            </div>
+
+            <div class="tier-container field-tier-box">
+                <select id="tier-select" class="tier-select" onchange="changeTierIcon(this.value)">
+                    <option value="unrank">언랭크</option>
+                    <option value="iron">아이언</option>
+                    <option value="bronze">브론즈</option>
+                    <option value="silver">실버</option>
+                    <option value="gold">골드</option>
+                    <option value="platinum">플래티넘</option>
+                    <option value="diamond">다이아몬드</option>
+                    <option value="meteorite">메테오라이트</option>
+                    <option value="mithril">미스릴</option>
+                    <option value="demigod">데미갓</option>
+                    <option value="eternity">이터니티</option>
+                </select>
+                <img id="tier-icon-img" class="tier-icon" src="" crossOrigin="anonymous" alt="" style="display: none;">
+            </div>
             
-            <textarea class="profile-input field-introduction" placeholder="소개글이나 작업 성향 등을 자유롭게 작성하세요."></textarea>
+            <input type="text" class="profile-text-input field-twitter-name" placeholder="트위터 닉네임">
+            <input type="text" class="profile-text-input field-info" placeholder="성별 / 나이">
+            
+            <div class="toggle-group field-play-style">
+                <span class="toggle-item" onclick="toggleActive(this)">연성</span>
+                <span class="toggle-item" onclick="toggleActive(this)">소비</span>
+                <span class="toggle-item" onclick="toggleActive(this)">흔적</span>
+                <span class="toggle-item" onclick="toggleActive(this)">일상</span>
+            </div>
+            <input type="text" class="profile-text-input field-play-etc" placeholder="기타 직접 입력...">
+
+            <div class="toggle-group field-avoid">
+                <span class="toggle-item" onclick="toggleActive(this)">블락</span>
+                <span class="toggle-item" onclick="toggleActive(this)">블언블</span>
+                <span class="toggle-item" onclick="toggleActive(this)">언팔</span>
+            </div>
+
+            <input type="text" class="profile-text-input field-time" placeholder="주요 접속 시간대">
+            <textarea class="profile-text-input field-introduction" placeholder="소개글을 자유롭게 작성하세요."></textarea>
+
+            <div class="upload-zone field-user-upload" onclick="triggerUpload()">
+                <span id="upload-placeholder">클릭하여 프로필<br>사진 업로드</span>
+                <img id="preview-img" style="display: none;" alt="프로필 사진">
+            </div>
+            <input type="file" id="user-file-input" class="file-hidden" accept="image/*" onchange="handleFile(this)">
+
         </div>
     </div>
 
     <script>
         // ========================================================
-        // 📦 [스킨 데이터 리스트]여기에 파이어베이스 주소를 편하게 추가하세요!
+        // 📦 [스킨 데이터 리스트] 파이어베이스 스토리지 주소 연동 구역
         // ========================================================
         const skinList = [
             { name: "기본 배경 양식", url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800" },
@@ -206,10 +378,26 @@
             { name: "데비 & 마를렌", url: "파이어베이스_데비마를렌_주소" }
         ];
 
-        // 페이지 로드 시 드롭다운 메뉴 자동 생성 및 초기 배경 설정
+        // ========================================================
+        // 🛡️ [티어 아이콘 매칭 테이블] 파이어베이스 스토리지 이미지 주소를 연결하세요!
+        // ========================================================
+        const tierImages = {
+            unrank: "파베_언랭크_아이콘_주소",
+            iron: "파베_아이언_아이콘_주소",
+            bronze: "파베_브론즈_아이콘_주소",
+            silver: "파베_실버_아이콘_주소",
+            gold: "파베_골드_아이콘_주소",
+            platinum: "파베_플래티넘_아이콘_주소",
+            diamond: "파베_다이아몬드_아이콘_주소",
+            meteorite: "파베_메테오라이트_아이콘_주소",
+            mithril: "파베_미스릴_아이콘_주소",
+            demigod: "파베_데미갓_아이콘_주소",
+            eternity: "파베_이터니티_아이콘_주소"
+        };
+
+        // 초기 빌드 및 메뉴 렌더링
         window.addEventListener('DOMContentLoaded', () => {
             const selectEl = document.getElementById('skin-select');
-            
             skinList.forEach(skin => {
                 const option = document.createElement('option');
                 option.value = skin.url;
@@ -217,28 +405,66 @@
                 selectEl.appendChild(option);
             });
 
-            if(skinList.length > 0) {
-                changeBackground(skinList[0].url);
-            }
+            if(skinList.length > 0) changeBackground(skinList[0].url);
+            
+            // 첫 티어 기본 이미지 호출
+            changeTierIcon(document.getElementById('tier-select').value);
         });
 
-        // 드롭다운 선택 시 배경 이미지 교체
         function changeBackground(imageUrl) {
-            const bgImage = document.getElementById('bg-image');
-            bgImage.src = imageUrl;
+            document.getElementById('bg-image').src = imageUrl;
         }
 
-        // 이미지 다운로드 함수
+        // 클릭 성향 선택 및 색상 변경 토글 스크립트
+        function toggleActive(element) {
+            element.classList.toggle('active');
+        }
+
+        // 티어 드롭다운 변경 시 아이콘 변경 스크립트
+        function changeTierIcon(tierKey) {
+            const imgEl = document.getElementById('tier-icon-img');
+            const url = tierImages[tierKey];
+            
+            if(url && !url.includes("파베_")) {
+                imgEl.src = url;
+                imgEl.style.display = "block";
+            } else {
+                imgEl.style.display = "none"; // 주소가 연결되지 않았을 땐 미표시
+            }
+        }
+
+        // 유저 로컬 이미지 수동 업로드 컨트롤
+        function triggerUpload() {
+            document.getElementById('user-file-input').click();
+        }
+
+        function handleFile(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('upload-placeholder').style.display = 'none';
+                    const preview = document.getElementById('preview-img');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 전체 캡처 및 저장 기능
         function downloadProfile() {
             const captureArea = document.getElementById('capture-area');
-            const inputs = captureArea.querySelectorAll('.profile-input');
+            const inputs = captureArea.querySelectorAll('.profile-text-input');
+            const tierSelect = document.getElementById('tier-select');
             const placeholders = [];
             
-            // 캡처 시 placeholder 문자열 숨기기
+            // 캡처 시 가이드를 위한 텍스트 및 기본 테두리 잠시 숨김
             inputs.forEach((input, index) => {
                 placeholders[index] = input.placeholder;
                 input.placeholder = '';
             });
+            tierSelect.style.opacity = "0"; // 캡처본에는 드롭다운 테두리 숨기기
 
             html2canvas(captureArea, { scale: 2, useCORS: true, allowTaint: false }).then(canvas => {
                 const link = document.createElement('a');
@@ -246,15 +472,17 @@
                 link.href = canvas.toDataURL('image/png');
                 link.click();
                 
-                // placeholder 다시 복구
+                // 복구
                 inputs.forEach((input, index) => {
                     input.placeholder = placeholders[index];
                 });
+                tierSelect.style.opacity = "1";
             }).catch(error => {
                 console.error('이미지 생성 실패:', error);
                 inputs.forEach((input, index) => {
                     input.placeholder = placeholders[index];
                 });
+                tierSelect.style.opacity = "1";
             });
         }
     </script>
