@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이터널 리턴 트친소 생성기</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* =========================================
+           페이퍼로지(Paperlogy) 웹폰트 연동
+           ========================================= */
+        @import url('https://fastly.jsdelivr.net/gh/projectnoonnu/2403-2@1.0/Paperlogy-All.woff2');
+
+        /* 기본 레이아웃 및 리셋 */
+        body {
+            font-family: 'Paperlogy', sans-serif; /* 전체 폰트 적용 */
+            background-color: #1e1e24;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+            margin: 0;
+        }
+
+        h1 {
+            font-family: 'Paperlogy', sans-serif;
+            font-weight: 800; /* 타이틀은 아주 두껍게 */
+            font-size: 24px;
+            margin-bottom: 5px;
+            color: #ff9800;
+        }
+
+        .control-panel {
+            margin-bottom: 20px;
+            background: #2a2a35;
+            padding: 15px 25px;
+            border-radius: 10px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .control-btn {
+            font-family: 'Paperlogy', sans-serif;
+            font-weight: 600; /* 버튼 글씨 강조 */
+            padding: 10px 20px;
+            font-size: 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .bg-btn { background-color: #4caf50; color: white; }
+        .bg-btn:hover { background-color: #45a049; }
+        .download-btn { background-color: #ff9800; color: white; font-size: 16px; font-weight: 700; }
+        .download-btn:hover { background-color: #e68a00; }
+
+        /* =========================================
+           캡처 영역 (16:9 비율 유지)
+           ========================================= */
+        #capture-area {
+            position: relative;
+            width: 800px;
+            height: 450px;
+            background-image: url('background.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            background-color: #2a2a35;
+            overflow: hidden;
+        }
+
+        /* =========================================
+           캐릭터 이미지 슬롯 스타일
+           ========================================= */
+        .image-slot {
+            position: absolute;
+            background-color: transparent;
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px dashed rgba(255, 255, 255, 0.25);
+            box-sizing: border-box;
+        }
+
+        .image-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .image-slot label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            background-color: rgba(0,0,0,0.7);
+            padding: 6px 12px;
+            border-radius: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .image-slot:hover label { opacity: 1; }
+        .hide-input { display: none; }
+        .center-circle { border-radius: 50%; }
+
+        /* 캐릭터 슬롯 절대 좌표 정의 */
+        .main-char-1 { top: 22.5%; left: 5.5%; width: 14.5%; height: 33.5%; }
+        .main-char-2 { top: 22.5%; left: 22.5%; width: 14.5%; height: 33.5%; }
+        .profile-char { top: 24.8%; left: 40.5%; width: 19.2%; height: 34.2%; }
+        .favorite-char-1 { top: 62%; left: 63.5%; width: 14.5%; height: 33.5%; }
+        .favorite-char-2 { top: 62%; left: 80.5%; width: 14.5%; height: 33.5%; }
+
+        /* =========================================
+           텍스트 입력창 스타일 (페이퍼로지 세부 세팅)
+           ========================================= */
+        .transparent-input {
+            position: absolute;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #2c2c2c; /* 표 내부 기본 어두운 글씨색 */
+            font-family: 'Paperlogy', sans-serif;
+            font-weight: 600; /* 리스트 입력값은 적당히 굵게(SemiBold) 설정해 가독성 확보 */
+            font-size: 14px;
+        }
+        
+        textarea.transparent-input {
+            resize: none;
+            overflow: hidden;
+            line-height: 1.4;
+            font-weight: 500; /* 긴 자유 소개글은 너무 굵으면 뭉개지므로 Medium 선호 */
+        }
+
+        .transparent-input::placeholder {
+            color: rgba(0, 0, 0, 0.35);
+            font-weight: 400; /* 안내 문구는 얇게 */
+        }
+
+        /* 텍스트 입력창 절대 좌표 정의 */
+        /* 인게임 정보 */
+        .pos-ingame-mode { top: 68.2%; left: 13.5%; width: 15.5%; }
+        .pos-ingame-name { top: 74.8%; left: 13.5%; width: 15.5%; font-weight: 700; } /* 인게임 닉네임은 더 굵게 */
+        .pos-ingame-discord { top: 81.3%; left: 13.5%; width: 15.5%; }
+        .pos-ingame-tier { top: 88.0%; left: 13.5%; width: 15.5%; font-weight: 700; }
+
+        /* 프로필 및 하단 소개 (중앙) */
+        .pos-center-name { top: 22.0%; left: 43.0%; width: 14.0%; text-align: center; color: #fff; font-weight: 700; font-size: 15px; } /* 상단 이름표 위 글씨색 반전 및 강조 */
+        .pos-gender-age { top: 61.8%; left: 45.0%; width: 13.0%; text-align: center; }
+        .pos-free-text { top: 79.5%; left: 37.5%; width: 25.0%; height: 13.5%; font-size: 13px; }
+
+        /* 성향 정보 */
+        .pos-type-tweet { top: 28.3%; left: 76.5%; width: 18.0%; }
+        .pos-type-block { top: 35.3%; left: 76.5%; width: 18.0%; }
+        .pos-type-time { top: 42.3%; left: 76.5%; width: 18.0%; }
+    </style>
+</head>
+<body>
+
+    <h1>이터널 리턴 트친소 제너레이터</h1>
+    
+    <div class="control-panel">
+        <label for="bg-upload" class="control-btn bg-btn">🖼️ 배경 양식 업로드</label>
+        <input type="file" id="bg-upload" accept="image/*" class="hide-input">
+        
+        <button class="control-btn download-btn" onclick="downloadImage()">💾 트친소 이미지 다운로드</button>
+    </div>
+
+    <div id="capture-area">
+        
+        <div class="image-slot main-char-1">
+            <img id="img-main-1" src="#" alt="주캐릭터 1">
+            <label>주캐 1 등록</label>
+            <input type="file" id="upload-main-1" accept="image/*" class="hide-input" onchange="previewImg(this, 'img-main-1')">
+        </div>
+        <div class="image-slot main-char-2">
+            <img id="img-main-2" src="#" alt="주캐릭터 2">
+            <label>주캐 2 등록</label>
+            <input type="file" id="upload-main-2" accept="image/*" class="hide-input" onchange="previewImg(this, 'img-main-2')">
+        </div>
+        <div class="image-slot profile-char center-circle">
+            <img id="img-profile" src="#" alt="프로필">
+            <label>프로필 등록</label>
+            <input type="file" id="upload-profile" accept="image/*" class="hide-input" onchange="previewImg(this, 'img-profile')">
+        </div>
+        <div class="image-slot favorite-char-1">
+            <img id="img-fav-1" src="#" alt="애정캐릭터 1">
+            <label>애정캐 1 등록</label>
+            <input type="file" id="upload-fav-1" accept="image/*" class="hide-input" onchange="previewImg(this, 'img-fav-1')">
+        </div>
+        <div class="image-slot favorite-char-2">
+            <img id="img-fav-2" src="#" alt="애정캐릭터 2">
+            <label>애정캐 2 등록</label>
+            <input type="file" id="upload-fav-2" accept="image/*" class="hide-input" onchange="previewImg(this, 'img-fav-2')">
+        </div>
+
+        <input type="text" class="transparent-input pos-ingame-mode" placeholder="일반 / 랭크 / 코발트 / 내전">
+        <input type="text" class="transparent-input pos-ingame-name" placeholder="인게임 닉네임">
+        <input type="text" class="transparent-input pos-ingame-discord" placeholder="듣기 / 말하기 / 전부 / 사용X">
+        <input type="text" class="transparent-input pos-ingame-tier" placeholder="현재 티어">
+
+        <input type="text" class="transparent-input pos-center-name" placeholder="트위터 닉네임">
+        <input type="text" class="transparent-input pos-gender-age" placeholder="성별 / 나이">
+        <textarea class="transparent-input pos-free-text" placeholder="소개글이나 작업 성향 등을 자유롭게 작성하세요."></textarea>
+
+        <input type="text" class="transparent-input pos-type-tweet" placeholder="연성 / 소비 / 흔적 / 일상">
+        <input type="text" class="transparent-input pos-type-block" placeholder="블락 / 블언블 / 언팔">
+        <input type="text" class="transparent-input pos-type-time" placeholder="주요 접속 시간대">
+
+    </div>
+
+    <script>
+        // 배경 이미지 업로드 처리
+        document.getElementById('bg-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('capture-area').style.backgroundImage = `url('${event.target.result}')`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 캐릭터 이미지 개별 등록 함수
+        function previewImg(input, imgId) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById(imgId);
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    input.closest('.image-slot').querySelector('label').style.opacity = '0';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 이미지 위 슬롯 클릭 시 input 창 트리거
+        document.querySelectorAll('.image-slot').forEach(slot => {
+            slot.addEventListener('click', function() {
+                this.querySelector('input[type="file"]').click();
+            });
+        });
+
+        // 최종 이미지 저장 함수
+        function downloadImage() {
+            const captureArea = document.getElementById('capture-area');
+            const slots = document.querySelectorAll('.image-slot');
+            slots.forEach(slot => slot.style.border = 'none');
+
+            html2canvas(captureArea, {
+                scale: 2, 
+                useCORS: true,
+                backgroundColor: null
+            }).then(canvas => {
+                slots.forEach(slot => slot.style.border = '1px dashed rgba(255, 255, 255, 0.25)');
+
+                const imageUrl = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.href = imageUrl;
+                link.download = 'eternal_return_profile.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }).catch(err => {
+                console.error("오류가 발생했습니다:", err);
+                alert("이미지 매칭 혹은 캡처 중 오류가 발생했습니다.");
+                slots.forEach(slot => slot.style.border = '1px dashed rgba(255, 255, 255, 0.25)');
+            });
+        }
+    </script>
+</body>
+</html>
